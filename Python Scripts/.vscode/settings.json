@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./SoundRelated"
+    ],
+    "python.formatting.provider": "black"
+}
