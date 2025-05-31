@@ -1,0 +1,2066 @@
+{
+  "name": "Auto Accounting : Gmail -> Notion",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {
+          "joinPages": true,
+          "keepSource": "json",
+          "password": "F130270007"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        820,
+        -360
+      ],
+      "id": "dfab817e-7793-46d4-9043-e747fb5f1902",
+      "name": "Extract from PDF"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Gmail Input').item.json.From }}",
+                    "rightValue": "ebill@estats.ctbcbank.com",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "ff0e44fb-8324-4db9-9669-fb78fc5d01e4"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "中國信託月對賬單"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b9b8a762-f11f-4270-aa5f-cd921e6714c2",
+                    "leftValue": "={{ $('Gmail Input').item.json.From }}",
+                    "rightValue": "bank.csc@inib.ctbcbank.com",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "中國信託存款變動通知"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a5328bee-2f79-46db-8930-fdaef6e0f562",
+                    "leftValue": "={{ $('Gmail Input').item.json.From }}",
+                    "rightValue": "webservice@cathaybk",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "國泰世華基金配息"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "91e32a15-95cc-4598-bf81-968cf4de1f95",
+                    "leftValue": "={{ $('Gmail Input').item.json.From }}",
+                    "rightValue": "notification@ebill1.cathaysec",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "國泰綜合證券月對帳單"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a28f6c0b-718f-4d72-85d4-a66b457b4d0a",
+                    "leftValue": "={{ $('Gmail Input').item.json.From }}",
+                    "rightValue": "cs@yuantafunds",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "元大基金收益分配"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        200,
+        -40
+      ],
+      "id": "bb276d53-af93-48aa-b97e-adc14895aa24",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const inputTarget = $input.item.json; //統一處理輸入來源，後續變更節點順序時，可直接修改此變量輸入\n\n\nlet text = inputTarget.text; //匹配對賬單日期範圍\nlet match;\nconst regex_date = /(\\d{4}\\/\\d{2}\\/\\d{2}) \\d{4}\\/(\\d{2}\\/\\d{2})/;\nlet dateRange = '';\nif( (match = regex_date.exec(text)) !== null) {\n  dateRange = `${match[1].replaceAll('/','')}~${match[2].replaceAll('/','')}`\n}\n\n\nconst regex1 = /(\\d{4}\\/\\d{2}\\/\\d{2})\\s+(\\d{4}\\/\\d{2}\\/\\d{2})\\s+([\\d,]+\\.\\d{2})\\s+([A-Z]{2})/g; // 國内消費匹配，中文注記無法從PDF抓取\nconst results_domestic = [];\nlet domesticCount =0;\nlet domesticTotalConsume = 0;\nwhile ((match = regex1.exec(text)) !== null) {\n  let cost = parseFloat(match[3].replace(/,/g, '')); //replace將所有“,”去除，parseFloat將字串轉換爲小數類型\n  domesticTotalConsume += cost;\n  \n  results_domestic.push({\n    transactionDate: match[1], //交易日\n    postingDate: match[2], //入賬日\n    amount: cost, //金額（臺幣）\n    location: match[4] || '', //交易地\n    Description: '', //交易摘要，僅有國外消費能被抓取為英文\n  });\n\n  domesticCount ++;\n}\n\nconst regex2 = /(\\d{4}\\/\\d{2}\\/\\d{2})\\s+(\\d{4}\\/\\d{2}\\/\\d{2})\\s+([a-zA-Z *_\\.]+)([\\d,]+\\.\\d{2})\\s+([A-Z]{2})/g; // 國外消費匹配（不含手續費）\nconst results_foreign = [];\nlet foreignCount = 0;\nlet foreignTotalConsume = 0;\nwhile ((match = regex2.exec(text)) !== null) {\n  let cost = parseFloat(match[4].replace(/,/g, ''));\n  foreignTotalConsume += cost;\n  \n  results_foreign.push({\n    transactionDate: match[1], //交易日\n    postingDate: match[2], //入賬日\n    amount: cost, //金額（臺幣）\n    location: match[5] || '', //交易地\n    Description: match[3], //交易摘要，僅有國外消費能被抓取為英文\n  });\n\n  foreignCount++;\n}\n\nconst regex3 = /(\\d{4}\\/\\d{2}\\/\\d{2})\\s+(\\d{4}\\/\\d{2}\\/\\d{2})\\s+([\\d,]+\\.\\d{2})\\s+[\\d,.]+\\s+[\\d\\/]+/g; // 國外消費手續費\nconst results_fee = [];\nlet transactionFeeCount = 0;\nlet feeTotalConsume = 0;\nwhile ((match = regex3.exec(text)) !== null) {\n  let cost = parseFloat(match[3].replace(/,/g, ''));\n  feeTotalConsume += cost;\n  \n  results_fee.push({\n    transactionDate: match[1], //交易日\n    postingDate: match[2], //入賬日\n    amount: cost, //金額（臺幣）\n    location: match[5] || '', //交易地\n    Description: '', //交易摘要，僅有國外消費能被抓取為英文\n  });\n\n  transactionFeeCount++;\n}\n\n\nconst regx_transfer = /(\\d{4}\\/\\d{2}\\/\\d{2})\\s([\\d,]+\\.\\d{2})\\s([\\d,.]+)\\n/g; //轉賬交易\nconst result_transfer = [];\nlet transferCount = 0;\nlet transferTotalConsume = 0;\nlet lastTransactionDate = '';\nlet lastBalance = 0;\nwhile ((match = regx_transfer.exec(text)) !== null) {\n  let cost = parseFloat(match[2].replace(/,/g, ''));\n  transferTotalConsume += cost;\n  \n  let currentBalance = parseFloat(match[3].replace(/,/g,''));\n  //處理可能出現的 冲正 情況，判斷條件：指定消費的餘額比當日内上一筆的餘額大，則扣回cost\n  if (currentBalance > lastBalance &&\n      lastTransactionDate == match[1]) {\n    result_transfer.pop(); //撤回上筆紀錄\n    transferTotalConsume -= cost; //扣回已事先加總的cost\n    transferCount--;\n    continue; //也直接跳過本筆資料的記錄\n  }  \n  \n  result_transfer.push({\n    transactionDate: match[1], //交易日（轉賬日）\n    postingDate: match[1], //交易日（轉賬日）\n    amount: cost, //金額（臺幣）\n    location: match[5] || '', //交易地\n    Description: '', //交易摘要，僅有國外消費能被抓取為英文\n  });\n\n  lastTransactionDate = match[1];\n  lastBalance = currentBalance;\n  transferCount++;\n}\n\n// 處理賬戶轉入情況，判斷條件：摘要能匹配到轉入賬號的數字\nconst regex_transferIn = /(\\d{4}\\/\\d{2}\\/\\d{2})\\s+\\d+\\*+\\d+\\*+\\s+([\\d,]+\\.\\d{2})\\s+[\\d,]+\\.\\d{2}\\n/g;\nwhile(( match = regex_transferIn.exec(text)) !== null){\n  let cost = parseFloat(match[2].replace(/,/g, ''));\n  transferTotalConsume -= cost;\n  \n    result_transfer.push({\n    transactionDate: match[1], //交易日（轉賬日）\n    postingDate: '', //交易日（轉賬日）\n    amount: cost, //金額（臺幣）\n    location: '', //交易地\n    Description: 'Transfer In', //交易摘要\n  });\n}\n\nreturn ({ json: {\n  dateRange,\n  \"totalConsume\" : domesticTotalConsume + foreignTotalConsume + feeTotalConsume + transferTotalConsume, \n  \"DomesticConsume\" : {\n    \"Count\": domesticCount,\n    \"TotalAmount\": domesticTotalConsume,\n    \"results\": results_domestic,\n  }, \n  \"ForeignConsume\" : {\n    \"Count\": foreignCount,\n    \"TotalAmount\": foreignTotalConsume,\n    \"results\": results_foreign,\n  }, \n  \"FeeConsume\":{\n    \"Count\": transactionFeeCount,\n    \"TotalAmount\": feeTotalConsume,\n    \"results\" : results_fee,\n  },\n  \"TransactionConsume\" :{\n    \"Count\": transferCount, \n    \"TotalAmount\": transferTotalConsume,\n    \"results\": result_transfer,\n  },\n} });\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        -360
+      ],
+      "id": "7a39f657-2fa7-4d30-a777-e198bd7addee",
+      "name": "Parse Info",
+      "notesInFlow": false,
+      "notes": "Done\n- 將所有Visa交易資料提取出來\n- 解決location資料若無導致下筆内容丟失問題\n  => location設定為可接受空字串，正則表達式分開匹配國内常規消費、國外消費 與 國外消費手續費\n- 提取所有轉帳資料\n  => 額外處理了冲正情況，將消費餘額 大於 當日内上筆消費的餘額 的資料視爲冲正，加回從text中無法區別的金額\n- 加總所有支出\n3. 可以的話根據支出類型，分類加總\n4. 爬取賬單記錄時間 => 記錄進Notion Page Title中"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const info = $input.item.json;\n\nlet textlines = '';\n\nfunction AddLog(logTarget, logName){\n    textlines += `${logName}\\nCount : ${logTarget.Count}\\tTotalAmount : ${logTarget.TotalAmount}\\n`\n  for (var data of logTarget.results) {\n    textlines += `${data.transactionDate} | ${data.amount.toString().padEnd(10)}`;\n    if (data.location !== '') {\n      textlines += ` | ${data.location}`;\n    }\n    if (data.Description !== ''){\n      textlines += ` | ${data.Description}`;\n    }\n    textlines += '\\n';\n  }\n  textlines += '\\n'; // Log Type End\n}\n\nAddLog(info.DomesticConsume, 'Domestic Consume');\nAddLog(info.ForeignConsume, 'Foreign Consume');\nAddLog(info.FeeConsume, 'Fee Consume');\nAddLog(info.TransactionConsume, 'Transaction Consume');\n\n// console.log(textlines);\n\nreturn ({item : textlines}); "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        -360
+      ],
+      "id": "150d9106-e39b-4381-bed9-d20d216b09da",
+      "name": "Compose Notion Text",
+      "notes": "TODO\n區分每種類型為單個區塊，區塊内包含類型的Heading1標題，類型的統計數據（總金額、總筆數），number_list_item交易詳情清單"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cb799253-a899-4afe-bbc0-452e8ebd8418",
+              "name": "NotionDatabaseID",
+              "value": "=1277836f-ac92-808a-bebe-c15dc8760efe",
+              "type": "string"
+            },
+            {
+              "id": "71001cd9-bb79-41a5-b2e0-54d295bef85b",
+              "name": "TransactionPageName",
+              "value": "=[\"對賬單\", \"基金配息_Testing\"]",
+              "type": "array"
+            },
+            {
+              "id": "dbbbfbdd-6c4e-44a7-abdb-b88753f71522",
+              "name": "AccountingType",
+              "value": "={\n\"DailyConsume_ID\":\"1607836f-ac92-8022-aaa7-df5ad4e8cb37\",\n\"Salary_ID\": \"1607836f-ac92-8019-91d2-cc764d3bc027\",\n\n}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -100,
+        20
+      ],
+      "id": "287dba20-6292-4df0-814b-f7d03a9fdfa0",
+      "name": "System Parameter",
+      "notesInFlow": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "content": "## TODO\n* Notion重複頁面自動處理\nNotion -> Databse Page -> Get Many\nSet Filter -> Name",
+        "height": 120,
+        "width": 370,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1300,
+        -520
+      ],
+      "typeVersion": 1,
+      "id": "86004d1d-6fb1-4be1-93d2-5367973569cf",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## TODO\n* 將發件者與處理流程的鍵值對儲存為 System Parameter\n* 統一管理參數，供後續管理與擴展",
+        "height": 140,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -100,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "ba5bf893-5e32-41f6-bae4-b666c999799a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "billchen986@gmail.com",
+        "subject": "n8n Detect Matched Email",
+        "message": "=n8n Workflow Name : {{ $workflow.name }}\nMatched Text : {{ $('Schedual Trigger').item.json.from.text }}\nEmail Title :   {{ $('Schedual Trigger').item.json.subject }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -100,
+        -580
+      ],
+      "id": "3202469b-8db3-4226-94e7-ae9318f35bd2",
+      "name": "Manual Approve",
+      "webhookId": "19f29dc2-61eb-4603-b338-824ba9259b65",
+      "notesInFlow": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      },
+      "disabled": true,
+      "notes": "Check process at first couple times\n\nTODO\nAutomatically delete approve msg in Gmail after approved"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $('Create Page').item.json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "textType": "mention",
+                    "mentionType": "user",
+                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "textContent": "={{ $('Compose Notion Text').item.json.item }}"
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=Mail Source : {{ $('Gmail Input').item.json.Subject }}",
+                    "isLink": true,
+                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject}}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        -360
+      ],
+      "id": "03290b5e-ce3f-4c9c-8edd-7fb8b3b82e77",
+      "name": "Log Detail",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
+          "mode": "id"
+        },
+        "title": "={{ $('System Parameter').item.json.TransactionPageName[0]+\"（\"+$('Parse Info').item.json.dateRange+\"）\"}}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Accounting Date|date",
+              "includeTime": false,
+              "date": "={{ $('Get PDF from Mail').item.json.headers.date }}"
+            },
+            {
+              "key": "Difference NTD|number",
+              "numberValue": "={{ -$('Parse Info').item.json.totalConsume }}"
+            },
+            {
+              "key": "Bank|select",
+              "selectValue": "中國信託"
+            },
+            {
+              "key": "Asset Source|relation",
+              "relationValue": [
+                "={{ $('System Parameter').item.json.AccountingType.DailyConsume_ID }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1620,
+        -360
+      ],
+      "id": "0ffddb8a-521a-47d4-a88b-e16d17241a8f",
+      "name": "Create Page",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      },
+      "notes": "TODO\n0. 設置Database Property至對應的項目中\n1. 將Code中爬取的資料列爲表格添加進Page中\n2. 將PDF附件上傳之Page中便於反查"
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "INBOX",
+          "UNREAD",
+          "Label_1724288855542833094"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2620,
+        0
+      ],
+      "id": "724919a7-e796-4b57-8c5b-503aaa2a28a6",
+      "name": "Remove Inbox and Unread",
+      "webhookId": "e720b3c9-3d25-487e-9b4b-947dcf2df78d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "1607836f-ac92-80ee-a54a-ce6d751c99c3",
+          "mode": "list",
+          "cachedResultName": "金融資產Source",
+          "cachedResultUrl": "https://www.notion.so/1607836fac9280eea54ace6d751c99c3"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Name|title",
+              "condition": "contains",
+              "titleValue": "證券"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -100,
+        -400
+      ],
+      "id": "40e7700e-dcbe-4d69-bfb2-d81bd43a5935",
+      "name": "Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Gmail Input').item.json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        -360
+      ],
+      "id": "423caa77-a550-4797-bcbe-d87a80775e15",
+      "name": "Get PDF from Mail",
+      "webhookId": "ea255f70-a879-4acf-a1ee-5e79096b6250",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -740,
+        -80
+      ],
+      "id": "b7e19c61-de92-434c-b258-46b0da8d4605",
+      "name": "Maunal Trigger"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "filters": {
+          "labelIds": [
+            "Label_1724288855542833094"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -740,
+        80
+      ],
+      "id": "c7dabd7a-8c40-4822-95ff-528f2f7ab113",
+      "name": "Schedual Trigger",
+      "notesInFlow": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -300,
+        20
+      ],
+      "id": "2ae63ef7-6d71-471e-89b9-89aca032c1aa",
+      "name": "Gmail Input",
+      "notes": "Merge all source collect from different triggers"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
+          "mode": "id"
+        },
+        "title": "={{ $json.info.Description }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Accounting Date|date",
+              "includeTime": false,
+              "date": "={{ $('Gmail Input').item.json.headers.date }}"
+            },
+            {
+              "key": "Difference NTD|number",
+              "numberValue": "={{ $json.info.amount }}"
+            },
+            {
+              "key": "Bank|select",
+              "selectValue": "中國信託"
+            },
+            {
+              "key": "Asset Source|relation",
+              "relationValue": [
+                "1607836f-ac92-8019-91d2-cc764d3bc027"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1620,
+        -140
+      ],
+      "id": "790c92f7-1eb5-4440-b4bd-2d12dcee9329",
+      "name": "Create Page1",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      },
+      "notes": "TODO\n0. 設置Database Property至對應的項目中\n1. 將Code中爬取的資料列爲表格添加進Page中\n2. 將PDF附件上傳之Page中便於反查"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "textType": "mention",
+                    "mentionType": "user",
+                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=Mail Source : {{$('Gmail Input').item.json.Subject}}",
+                    "isLink": true,
+                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject + ' ' + $('Parse Info (Salary)').item.json.info.transactionDate.replaceAll('/',\"%2F\")}}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        -140
+      ],
+      "id": "127ab1df-fc8a-4d8c-a22f-b504ed1e5965",
+      "name": "Add Content",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### TODO\n* 轉賬入賬情況處理，避免與對賬單重複",
+        "height": 100,
+        "width": 360,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1380,
+        160
+      ],
+      "typeVersion": 1,
+      "id": "a5448378-bb5c-4237-924c-83a58109dad6",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const source = $('Gmail Input').item.json.snippet;\nlet info = {};\n\nconst regex = /轉入帳號\\s+[\\d\\-*]+\\s+入帳日期\\s+(\\d{4}\\/\\d{2}\\/\\d{2})\\s+入帳時間\\s+[\\d:]+\\s+存入幣別\\s+(\\w{2}).+\\s+存入金額\\s+([\\d,\\.]+)\\s+入帳種類\\s+([^\\s]+)/\n\nlet match = regex.exec(source);\nif ( match !== null){\n  var amount = parseFloat(match[3].replaceAll(',',''));\n  info = {\n    transactionDate: match[1], //交易日\n    postingDate: match[1], //入賬日\n    amount: amount, //金額\n    location: match[2] || '', //交易地/幣別代號\n    Description: match[4] || '', //交易摘要\n  }\n}\n\nreturn ({info});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        -140
+      ],
+      "id": "5a9f2bb5-b23d-47e9-8bcf-6547c8eb3090",
+      "name": "Parse Info (Salary)"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Gmail Input').item.json.snippet }}",
+                    "rightValue": "薪資",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "ca88052a-d22f-4f40-b13d-66a89da043dc"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "薪資入賬"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9a655067-8971-424d-aec3-096c347e1952",
+                    "leftValue": "={{ $('Gmail Input').item.json.snippet }}",
+                    "rightValue": "方便付交易結果通知",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "方便付"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "455dd1ba-742b-406f-ae4b-919ed940b321",
+      "name": "Identify Msg Type"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const source = $('Gmail Input').item.json.snippet;\nlet info = {};\n\nconst regex = /交易類別\\s+.+\\s+交易日期\\s+(\\d{4}\\/\\d{2}\\/\\d{2})\\s+(?:.+\\s+.+\\s+){3}交易金額\\s+(.+)\\s+([\\d,\\.]+)\\s+註記\\s+([^\\s]+)\\s/;\n\nlet match = regex.exec(source);\nif ( match !== null){\n  var amount = parseFloat(match[3].replaceAll(',',''));\n  info = {\n    transactionDate: match[1], //交易日\n    postingDate: match[1], //入賬日\n    amount: -amount, //金額\n    location: match[2] || '', //交易地/幣別代號\n    Description: match[4] || '', //交易摘要\n  }\n}\n\nreturn ({info});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        0
+      ],
+      "id": "ba4092d2-b77b-454b-be58-ed40c49c2fe5",
+      "name": "Parse Info (Survice Charge)"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
+          "mode": "id"
+        },
+        "title": "={{ $json.info.Description }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Accounting Date|date",
+              "includeTime": false,
+              "date": "={{ $json.info.transactionDate }}"
+            },
+            {
+              "key": "Difference NTD|number",
+              "numberValue": "={{ $json.info.amount }}"
+            },
+            {
+              "key": "Bank|select",
+              "selectValue": "中國信託"
+            },
+            {
+              "key": "Asset Source|relation",
+              "relationValue": [
+                "={{ $('System Parameter').item.json.AccountingType.DailyConsume_ID }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1620,
+        0
+      ],
+      "id": "08313dad-40b0-4d7e-8f81-faa8b3108cd9",
+      "name": "Create Page2",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      },
+      "notes": "TODO\n0. 設置Database Property至對應的項目中\n1. 將Code中爬取的資料列爲表格添加進Page中\n2. 將PDF附件上傳之Page中便於反查"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "textType": "mention",
+                    "mentionType": "user",
+                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=Mail Source : {{$('Gmail Input').item.json.Subject}}",
+                    "isLink": true,
+                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject + ' ' + $('Parse Info (Survice Charge)').item.json.info.transactionDate.replaceAll('/',\"%2F\")}}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        0
+      ],
+      "id": "cfed088e-79ff-4400-aeb4-831389fd7424",
+      "name": "Add Content1",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const source = $('Gmail Input').item.json.snippet;\nlet info = {};\n\nconst regex = /轉入帳號\\s+[\\d\\-*]+\\s+入帳日期\\s+(\\d{4}\\/\\d{2}\\/\\d{2})\\s+入帳時間\\s+[\\d:]+\\s+存入幣別\\s+(\\w{2}).+\\s+存入金額\\s+([\\d,\\.]+)\\s+入帳種類\\s+([^\\s]+)\\s+/;\n\nlet match = regex.exec(source);\nif ( match !== null){\n  var amount = parseFloat(match[3].replaceAll(',',''));\n  info = {\n    transactionDate: match[1], //交易日\n    postingDate: match[1], //入賬日\n    amount: amount, //金額\n    location: match[2] || '', //交易地/幣別代號\n    Description: match[4] || '', //交易摘要\n  }\n}\n\nreturn ({info});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        160
+      ],
+      "id": "dabff38a-6238-44b4-beba-60969c2cc911",
+      "name": "Parse Info (Other Type Msg)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "### TODO\n* 方便付資料按月集中統計 \n=> 每有新一筆寄郵件，找到當月Notion頁面，添加至該頁面並統計數字",
+        "height": 100,
+        "width": 370,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        880,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "63af9d57-f3f7-40a9-88a7-e807e409980a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Input').item.json.id }}",
+        "labelIds": [
+          "Label_2350128084703781020",
+          "Label_1234836624395790616"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2460,
+        0
+      ],
+      "id": "15967498-b837-4910-8c1a-f63748728c38",
+      "name": "Mark as Done",
+      "webhookId": "5a546678-28ce-4cb7-8ff8-6239b3209b6f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const source = $('Gmail Input').item.json.snippet;\nvar info = {};\n\nconst regex = /標的名稱\\s+(.+)\\s+除息基準日\\s+\\d{3,4}\\/\\d{2}\\/\\d{2}\\s+基準日單位數\\s+[\\d\\.,]+\\s+單位分配金額\\s+[\\d\\.,]+\\s+(?:匯率\\s+[\\d\\.,]+\\s+)?實付金額\\s+\\((\\w+)\\)\\s+([\\d\\.,]+)\\s+分配日\\s+(\\d{3,4})\\/(\\d{2}\\/\\d{2})/;\n\nvar match = regex.exec(source);\nif (match !== null){\n  var incomeValue = parseFloat(match[3].replaceAll(',',''));\n\n  // Deal with ROC era to BCE\n  var date_year = parseInt(match[4]);\n  if(date_year < 1000) date_year += 1911;\n  var date = `${date_year}/${match[5]}`;\n  \n  info = {\n    transactionDate: date, //交易日\n    postingDate: date, //入賬日\n    amount:incomeValue, //金額\n    location:match[2], //交易地/幣別代號\n    Description:match[1], //交易摘要，資產來源\n  }\n}\nelse info = { \n  error : \"Can not match info from this source. Please check your regex\",\n  // sourceText :  $('Gmail Input').item.json.snippet,\n  // regex : regex_text,\n};\n\nreturn ({info});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        520
+      ],
+      "id": "f7898ae1-d376-47db-9085-89706409f4b4",
+      "name": "Parse Info (Investment)"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "1607836f-ac92-80ee-a54a-ce6d751c99c3",
+          "mode": "list",
+          "cachedResultName": "金融資產Source",
+          "cachedResultUrl": "https://www.notion.so/1607836fac9280eea54ace6d751c99c3"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Name|title",
+              "condition": "starts_with",
+              "titleValue": "={{ $json.info.Description.split(' ')[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1400,
+        520
+      ],
+      "id": "6ce16c31-e490-4410-bfb4-7445055828ff",
+      "name": "Search Asset Page",
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
+          "mode": "id"
+        },
+        "title": "={{ $('System Parameter').item.json.TransactionPageName[1] }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Accounting Date|date",
+              "includeTime": false,
+              "date": "={{ $('Parse Info (Investment)').item.json.info.transactionDate }}"
+            },
+            {
+              "key": "Difference NTD|number",
+              "numberValue": "={{ \n$('Parse Info (Investment)').item.json.info.location == 'NTD'\n? $('Parse Info (Investment)').item.json.info.amount\n: null\n}}"
+            },
+            {
+              "key": "Bank|select",
+              "selectValue": "國泰世華"
+            },
+            {
+              "key": "Asset Source|relation",
+              "relationValue": [
+                "={{ $json.id }}"
+              ]
+            },
+            {
+              "key": "Difference USD|number",
+              "numberValue": "={{ \n$('Parse Info (Investment)').item.json.info.location == 'USD'\n? $('Parse Info (Investment)').item.json.info.amount\n: null\n}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1620,
+        520
+      ],
+      "id": "aeaec383-6617-4fb9-a786-4617fc83c193",
+      "name": "Create Page3",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      },
+      "notes": "TODO\n0. 設置Database Property至對應的項目中\n1. 將Code中爬取的資料列爲表格添加進Page中\n2. 將PDF附件上傳之Page中便於反查"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "textType": "mention",
+                    "mentionType": "user",
+                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=Mail Source : {{$('Gmail Input').item.json.Subject}}",
+                    "isLink": true,
+                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject}}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        520
+      ],
+      "id": "caaf6817-70bb-4465-ba53-9d9726673976",
+      "name": "Add Content2",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        2780,
+        0
+      ],
+      "id": "3e326f80-5443-42e8-b21e-35b59eee97bc",
+      "name": "Execution Data",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {
+          "joinPages": true,
+          "keepSource": "json",
+          "password": "F130270007"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        820,
+        720
+      ],
+      "id": "377da686-369d-4676-8509-9aa2ed4d333e",
+      "name": "Extract from PDF1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const info = $input.item.json;\n\nlet textlines = '';\n\nfunction AddLog(logTarget){\n    textlines += `TotalBuy : ${logTarget.Amount.totalBuy}\\tTotalSell : ${logTarget.Amount.totalSell}\\n`\n  for (var data of logTarget.results) {\n    textlines += `${data.transactionDate} | ${data.amount.toString().padEnd(10)} | ${data.assetName.padEnd(5)}\\t${data.description}\\n`;\n  }\n  textlines += '\\n'; // Log Type End\n}\n\nAddLog(info);\n\n// console.log(textlines);\n\nreturn ({item : textlines}); "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        720
+      ],
+      "id": "5c335cbd-2d26-46e8-80dc-a696c789e255",
+      "name": "Compose Notion Text1",
+      "notes": "TODO\n區分每種類型為單個區塊，區塊内包含類型的Heading1標題，類型的統計數據（總金額、總筆數），number_list_item交易詳情清單"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Gmail Input').item.json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        720
+      ],
+      "id": "5286d00c-883f-4440-96e6-cde0000b9602",
+      "name": "Get PDF from Mail1",
+      "webhookId": "ea255f70-a879-4acf-a1ee-5e79096b6250",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const inputTarget = $input.item.json; //統一處理輸入來源，後續變更節點順序時，可直接修改此變量輸入\n\n\nlet text = inputTarget.text;\nlet dateRange = $json.date.slice(0,7).replaceAll('-','/'); //匹配對賬單日期範圍\n\nlet match;\n\nconst regex_transactionRecord = /^(\\d{3,4}\\/\\d{2}\\/\\d{2})\\s+(.+?)\\s+(.+?)\\s+(\\d+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,\\-+]+)/gm; // 匹配交易記錄條目，每行以日期開頭\nconst results = [];\nlet totalBuy = 0;\nlet totalSell = 0;\nlet count = 0;\n\nwhile ((match = regex_transactionRecord.exec(text)) !== null) {\n  let amount = parseFloat(match[9].replaceAll(',','')); //replace將所有“,”去除，parseFloat將字串轉換爲小數類型\n  if (amount<0) {\n    totalBuy += amount;\n  }\n  else totalSell += amount;\n  \n  results.push({\n    transactionDate: match[1], //交易日\n    assetName: match[2], //證券名稱\n    amount, //金額（臺幣）\n    description: `${match[3]} : ${match[4]}(股) * ${match[5]}(單價)`, //交易摘要，主要顯示 購買 或 賣出 的股數、單價 與 手續費\n    fee: match[7],\n    tax: match[8],\n  });\n\n  count ++;\n}\n\nreturn ({ \n  dateRange,\n  Count: count,\n  Amount : {\n    total : totalBuy + totalSell,\n    totalBuy,\n    totalSell,\n  },\n  results,\n });\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        720
+      ],
+      "id": "63c5e6d7-c018-4eba-be68-cf194d47e929",
+      "name": "Parse Info (Stock)",
+      "notesInFlow": false,
+      "notes": "Done\n- 將所有Visa交易資料提取出來\n- 解決location資料若無導致下筆内容丟失問題\n  => location設定為可接受空字串，正則表達式分開匹配國内常規消費、國外消費 與 國外消費手續費\n- 提取所有轉帳資料\n  => 額外處理了冲正情況，將消費餘額 大於 當日内上筆消費的餘額 的資料視爲冲正，加回從text中無法區別的金額\n- 加總所有支出\n3. 可以的話根據支出類型，分類加總\n4. 爬取賬單記錄時間 => 記錄進Notion Page Title中"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
+          "mode": "id"
+        },
+        "title": "={{ \n`證券月對賬（${$('Parse Info (Stock)').item.json.dateRange.replaceAll('/','')}）`\n}}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Accounting Date|date",
+              "includeTime": false,
+              "date": "={{ $('Get PDF from Mail1').item.json.headers.date }}"
+            },
+            {
+              "key": "Difference NTD|number",
+              "numberValue": "={{ $('Parse Info (Stock)').item.json.Amount.total }}"
+            },
+            {
+              "key": "Bank|select",
+              "selectValue": "國泰世華"
+            },
+            {
+              "key": "Asset Source|relation",
+              "relationValue": [
+                "1607836f-ac92-80ae-a852-d32ba5ecfd39"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1620,
+        720
+      ],
+      "id": "c688b7ca-53e9-4dbc-8024-f759b2f64f8c",
+      "name": "Create Page4",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      },
+      "notes": "TODO\n0. 設置Database Property至對應的項目中\n1. 將Code中爬取的資料列爲表格添加進Page中\n2. 將PDF附件上傳之Page中便於反查"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "textContent": "={{ $('Compose Notion Text1').item.json.item }}"
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=Mail Source : {{ $('Gmail Input').item.json.Subject }}",
+                    "isLink": true,
+                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject+$('Parse Info (Stock)').item.json.dateRange.replaceAll('/',\"%2F\")}}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "textType": "mention",
+                    "mentionType": "user",
+                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        720
+      ],
+      "id": "38bbe550-db3e-4add-8dfc-ccd97d332a84",
+      "name": "Add Content3",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "billchen986@gmail.com",
+        "subject": "Automatic accounting Done !",
+        "emailType": "text",
+        "message": "=Source : Gmail - {{ $('Schedual Trigger').item.json.subject }}\nNotion Page :  {{ $('Create Page').item.json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2300,
+        0
+      ],
+      "id": "9a654493-b572-43ae-9d63-03f120be689e",
+      "name": "Notify Me",
+      "webhookId": "5a546678-28ce-4cb7-8ff8-6239b3209b6f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "# TODO \n## 模塊化新增Notion頁面與填入資料的流程\n\n1. 需解決輸入數據的格式可能不太一致的問題\n2. 暫未想出合適的可直接填入指定數據格式的方法\n    - Set Fields Node？\n    - Excecute Sub Workflow Node + Triggered by other workflow Node ?\n        因Triggered by other workflow 每個 workflow 僅能使用一個，無法真正達成子函數的功能。為後續擴展性考量，似乎不太適合占據此模塊",
+        "height": 300,
+        "width": 460
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1500
+      ],
+      "id": "baabf001-ac19-4263-9e16-d507bad0dcd2",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
+          "mode": "id"
+        },
+        "title": "=基金配息",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Accounting Date|date",
+              "includeTime": false,
+              "date": "={{ $('Get PDF from Mail2').item.json.headers.date }}"
+            },
+            {
+              "key": "Difference NTD|number",
+              "numberValue": "={{ $('Parse Info (Stock)1').item.json.amount }}"
+            },
+            {
+              "key": "Bank|select",
+              "selectValue": "國泰世華"
+            },
+            {
+              "key": "Asset Source|relation",
+              "relationValue": [
+                "={{ $json.id }}"
+              ]
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1620,
+        980
+      ],
+      "id": "de1ade64-5b53-4104-a677-0016f826d0c8",
+      "name": "Create Page5",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      },
+      "notes": "TODO\n0. 設置Database Property至對應的項目中\n1. 將Code中爬取的資料列爲表格添加進Page中\n2. 將PDF附件上傳之Page中便於反查"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "textContent": "={{ $('Parse Info (Stock)1').item.json.description }}"
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "=Mail Source : {{ $('Gmail Input').item.json.Subject }}",
+                    "isLink": true,
+                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject}}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "textType": "mention",
+                    "mentionType": "user",
+                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        980
+      ],
+      "id": "2ad57942-d04a-43a8-9342-fec54a407762",
+      "name": "Add Content4",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {
+          "joinPages": true,
+          "keepSource": "json",
+          "password": "F130270007"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        820,
+        980
+      ],
+      "id": "3176b068-7769-400e-96dd-c520780c46e9",
+      "name": "Extract from PDF2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Gmail Input').item.json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        980
+      ],
+      "id": "12721139-4e60-47b8-81d5-f2ab2b1b7a21",
+      "name": "Get PDF from Mail2",
+      "webhookId": "ea255f70-a879-4acf-a1ee-5e79096b6250",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputTarget = $input.all(); //統一處理輸入來源，後續變更節點順序時，可直接修改此變量輸入\n\n/** @type {{}[]} */\nconst results = [];\nfor (var i=0; i<inputTarget.length; i++) {\n  ProcessInfo(inputTarget[i].json.text, inputTarget[i].json.date,i)\n}\n\nreturn results;\n\n\n\nfunction ProcessInfo(text, date, pairedItemIndex) {\n  \n  let match;\n  const regex_transactionRecord = /^(\\d+)\\s+(\\d{3,4}\\/\\d{2}\\/\\d{2})\\s+([\\d,\\.]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([^\\s]+)\\s+(?:[\\d\\.,]+\\s+){2}([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([^\\s]+)\\s+(\\d{3,4}\\/\\d{2}\\/\\d{2})/gm; // 匹配交易記錄條目，每行以數字開頭\n  \n  while ((match = regex_transactionRecord.exec(text)) !== null) {\n    let amount = parseFloat(match[8].replaceAll(',','')); //replace將所有“,”去除，parseFloat將字串轉換爲小數類型\n    \n    var exDividendDate = match[2].replace(/(\\d{3})/,date.slice(0,4)); //除夕日,轉換爲BCE紀年\n    var transactionDate = match[10].replace(/(\\d{3})/,date.slice(0,4)); //轉賬日，轉換爲BCE紀年\n    \n    results.push({\n      json: {\n        exDividendDate, //除夕日\n        transactionDate, //轉賬日\n        assetName: `${match[1]} ${match[9]}`, //代號 + 證券名稱\n        amount, //金額\n        currency: match[6], // 幣別\n        description: `${match[3]}(單位數) * ${match[4]}(單位分配金額) - ${match[7]}(郵/匯費)`, //交易摘要，主要顯示 分配單位數、單位金額、郵匯費\n        \n      },\n      \"pairedItem\": pairedItemIndex, // 手動儲存n8n itemlinking 訊息，便於後續節點迭代使用 https://docs.n8n.io/data/data-mapping/data-item-linking/item-linking-code-node/\n    });\n  }\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        980
+      ],
+      "id": "46671b38-fb5c-4f77-8e7c-ec1bcd8923b1",
+      "name": "Parse Info (Stock)1",
+      "notesInFlow": false,
+      "notes": "* 一次性處理所有輸入的郵件PDF（item）\n* 將PDF内匹配出的每個條目（result）輸出"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "1607836f-ac92-80ee-a54a-ce6d751c99c3",
+          "mode": "list",
+          "cachedResultName": "金融資產Source",
+          "cachedResultUrl": "https://www.notion.so/1607836fac9280eea54ace6d751c99c3"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Name|title",
+              "condition": "starts_with",
+              "titleValue": "={{ $json.assetName.split(' ')[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1400,
+        980
+      ],
+      "id": "fe93049d-4079-45b6-900b-7f2c8be2ff7b",
+      "name": "Search Asset Page1",
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Todo\n\n- 拆分對賬單内各類資產至獨立頁面"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1240
+      ],
+      "id": "a8d1083b-71c2-4da6-a991-1a4dc367493a",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 10,
+        "filters": {
+          "labelIds": [
+            "Label_1724288855542833094"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -560,
+        -80
+      ],
+      "id": "70e6c67f-462e-4cc9-b980-8412ea033270",
+      "name": "Get All Tagged Msg",
+      "webhookId": "4d7e6a49-62a0-4bf1-a880-1a839c4c4e2e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get PDF from Mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Identify Msg Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Info (Investment)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get PDF from Mail1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get PDF from Mail2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from PDF": {
+      "main": [
+        [
+          {
+            "node": "Parse Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Info": {
+      "main": [
+        [
+          {
+            "node": "Compose Notion Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Notion Text": {
+      "main": [
+        [
+          {
+            "node": "Create Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "System Parameter": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Approve": {
+      "main": [
+        []
+      ]
+    },
+    "Log Detail": {
+      "main": [
+        [
+          {
+            "node": "Notify Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Page": {
+      "main": [
+        [
+          {
+            "node": "Log Detail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Remove Inbox and Unread": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get PDF from Mail": {
+      "main": [
+        [
+          {
+            "node": "Extract from PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Maunal Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get All Tagged Msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail Input",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Gmail Input": {
+      "main": [
+        [
+          {
+            "node": "System Parameter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Page1": {
+      "main": [
+        [
+          {
+            "node": "Add Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Content": {
+      "main": [
+        [
+          {
+            "node": "Notify Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Info (Salary)": {
+      "main": [
+        [
+          {
+            "node": "Create Page1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identify Msg Type": {
+      "main": [
+        [
+          {
+            "node": "Parse Info (Salary)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Info (Survice Charge)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Info (Other Type Msg)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Page2": {
+      "main": [
+        [
+          {
+            "node": "Add Content1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Info (Survice Charge)": {
+      "main": [
+        [
+          {
+            "node": "Create Page2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Content1": {
+      "main": [
+        [
+          {
+            "node": "Notify Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Info (Other Type Msg)": {
+      "main": [
+        []
+      ]
+    },
+    "Mark as Done": {
+      "main": [
+        [
+          {
+            "node": "Remove Inbox and Unread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Info (Investment)": {
+      "main": [
+        [
+          {
+            "node": "Search Asset Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Page3": {
+      "main": [
+        [
+          {
+            "node": "Add Content2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Asset Page": {
+      "main": [
+        [
+          {
+            "node": "Create Page3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Content2": {
+      "main": [
+        [
+          {
+            "node": "Notify Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from PDF1": {
+      "main": [
+        [
+          {
+            "node": "Parse Info (Stock)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get PDF from Mail1": {
+      "main": [
+        [
+          {
+            "node": "Extract from PDF1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Info (Stock)": {
+      "main": [
+        [
+          {
+            "node": "Compose Notion Text1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Page4": {
+      "main": [
+        [
+          {
+            "node": "Add Content3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Notion Text1": {
+      "main": [
+        [
+          {
+            "node": "Create Page4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Content3": {
+      "main": [
+        [
+          {
+            "node": "Notify Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Me": {
+      "main": [
+        [
+          {
+            "node": "Mark as Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Page5": {
+      "main": [
+        [
+          {
+            "node": "Add Content4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get PDF from Mail2": {
+      "main": [
+        [
+          {
+            "node": "Extract from PDF2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from PDF2": {
+      "main": [
+        [
+          {
+            "node": "Parse Info (Stock)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Info (Stock)1": {
+      "main": [
+        [
+          {
+            "node": "Search Asset Page1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Asset Page1": {
+      "main": [
+        [
+          {
+            "node": "Create Page5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Content4": {
+      "main": [
+        [
+          {
+            "node": "Notify Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Tagged Msg": {
+      "main": [
+        [
+          {
+            "node": "Gmail Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Taipei",
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveManualExecutions": false
+  },
+  "versionId": "4045a62d-f11a-4763-94f6-5395f731cbfb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4dd7c30ae3db2652dcaa956b6b4e864865a73535788bea24682077d280be0003"
+  },
+  "id": "FYGsrFtyuSFMnWSR",
+  "tags": []
+}
