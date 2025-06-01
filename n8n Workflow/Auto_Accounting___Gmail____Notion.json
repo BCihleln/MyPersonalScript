@@ -330,7 +330,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1760,
+        1900,
         -360
       ],
       "id": "03290b5e-ce3f-4c9c-8edd-7fb8b3b82e77",
@@ -381,7 +381,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1620,
+        1760,
         -360
       ],
       "id": "0ffddb8a-521a-47d4-a88b-e16d17241a8f",
@@ -409,7 +409,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2620,
+        2720,
         0
       ],
       "id": "724919a7-e796-4b57-8c5b-503aaa2a28a6",
@@ -577,7 +577,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1620,
+        1760,
         -140
       ],
       "id": "790c92f7-1eb5-4440-b4bd-2d12dcee9329",
@@ -634,7 +634,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1760,
+        1900,
         -140
       ],
       "id": "127ab1df-fc8a-4d8c-a22f-b504ed1e5965",
@@ -796,7 +796,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1620,
+        1760,
         0
       ],
       "id": "08313dad-40b0-4d7e-8f81-faa8b3108cd9",
@@ -853,7 +853,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1760,
+        1900,
         0
       ],
       "id": "cfed088e-79ff-4400-aeb4-831389fd7424",
@@ -910,7 +910,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2460,
+        2560,
         0
       ],
       "id": "15967498-b837-4910-8c1a-f63748728c38",
@@ -936,45 +936,6 @@
       ],
       "id": "f7898ae1-d376-47db-9085-89706409f4b4",
       "name": "Parse Info (Investment)"
-    },
-    {
-      "parameters": {
-        "resource": "databasePage",
-        "operation": "getAll",
-        "databaseId": {
-          "__rl": true,
-          "value": "1607836f-ac92-80ee-a54a-ce6d751c99c3",
-          "mode": "list",
-          "cachedResultName": "金融資產Source",
-          "cachedResultUrl": "https://www.notion.so/1607836fac9280eea54ace6d751c99c3"
-        },
-        "limit": 1,
-        "filterType": "manual",
-        "filters": {
-          "conditions": [
-            {
-              "key": "Name|title",
-              "condition": "starts_with",
-              "titleValue": "={{ $json.info.Description.split(' ')[0] }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.notion",
-      "typeVersion": 2.2,
-      "position": [
-        1400,
-        520
-      ],
-      "id": "6ce16c31-e490-4410-bfb4-7445055828ff",
-      "name": "Search Asset Page",
-      "credentials": {
-        "notionApi": {
-          "id": "sHrVL1Suf8ubHYrJ",
-          "name": "Bill's Notion"
-        }
-      }
     },
     {
       "parameters": {
@@ -1017,7 +978,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1620,
+        1760,
         520
       ],
       "id": "aeaec383-6617-4fb9-a786-4617fc83c193",
@@ -1074,7 +1035,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1760,
+        1900,
         520
       ],
       "id": "caaf6817-70bb-4465-ba53-9d9726673976",
@@ -1086,14 +1047,15 @@
           "id": "sHrVL1Suf8ubHYrJ",
           "name": "Bill's Notion"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {},
       "type": "n8n-nodes-base.executionData",
       "typeVersion": 1,
       "position": [
-        2780,
+        2900,
         0
       ],
       "id": "3e326f80-5443-42e8-b21e-35b59eee97bc",
@@ -1122,7 +1084,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const info = $input.item.json;\n\nlet textlines = '';\n\nfunction AddLog(logTarget){\n    textlines += `TotalBuy : ${logTarget.Amount.totalBuy}\\tTotalSell : ${logTarget.Amount.totalSell}\\n`\n  for (var data of logTarget.results) {\n    textlines += `${data.transactionDate} | ${data.amount.toString().padEnd(10)} | ${data.assetName.padEnd(5)}\\t${data.description}\\n`;\n  }\n  textlines += '\\n'; // Log Type End\n}\n\nAddLog(info);\n\n// console.log(textlines);\n\nreturn ({item : textlines}); "
+        "jsCode": "const info = $input.item.json;\n\nlet textlines = '';\nlet mainSourceName = '';\n\nfunction AddLog(logTarget){\n  mainSourceName = \n$('Get PDF from Mail1').item.json.subject + logTarget.transactionDate.slice(0,7).replace('/','-');\n  \n  textlines += `${logTarget.amount.toString().padEnd(10)} | ${logTarget.description} | 手續費 : ${logTarget.fee} | 交易稅 : ${logTarget.tax}`;\n  textlines += '\\n'; // Log Type End\n}\n\nAddLog(info);\n\n// console.log(textlines);\n\nreturn ({\n  assetName: $json.assetName,\n  mainSourceName,\n  textlines\n}); "
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1161,8 +1123,7 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const inputTarget = $input.item.json; //統一處理輸入來源，後續變更節點順序時，可直接修改此變量輸入\n\n\nlet text = inputTarget.text;\nlet dateRange = $json.date.slice(0,7).replaceAll('-','/'); //匹配對賬單日期範圍\n\nlet match;\n\nconst regex_transactionRecord = /^(\\d{3,4}\\/\\d{2}\\/\\d{2})\\s+(.+?)\\s+(.+?)\\s+(\\d+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,\\-+]+)/gm; // 匹配交易記錄條目，每行以日期開頭\nconst results = [];\nlet totalBuy = 0;\nlet totalSell = 0;\nlet count = 0;\n\nwhile ((match = regex_transactionRecord.exec(text)) !== null) {\n  let amount = parseFloat(match[9].replaceAll(',','')); //replace將所有“,”去除，parseFloat將字串轉換爲小數類型\n  if (amount<0) {\n    totalBuy += amount;\n  }\n  else totalSell += amount;\n  \n  results.push({\n    transactionDate: match[1], //交易日\n    assetName: match[2], //證券名稱\n    amount, //金額（臺幣）\n    description: `${match[3]} : ${match[4]}(股) * ${match[5]}(單價)`, //交易摘要，主要顯示 購買 或 賣出 的股數、單價 與 手續費\n    fee: match[7],\n    tax: match[8],\n  });\n\n  count ++;\n}\n\nreturn ({ \n  dateRange,\n  Count: count,\n  Amount : {\n    total : totalBuy + totalSell,\n    totalBuy,\n    totalSell,\n  },\n  results,\n });\n"
+        "jsCode": "const inputTarget = $input.all(); //統一處理輸入來源，後續變更節點順序時，可直接修改此變量輸入\n\n/** @type {{}[]} */\nconst results = [];\nfor (let index = 0; index < inputTarget.length; index++) {\n  const element = inputTarget[index];\n  ProcessInfo(element.json.text,index);\n}\n\nfunction ProcessInfo(text, pairedItemIndex){\n  \n  let match;\n  \n  const regex_transactionRecord = /^(\\d{3,4}\\/\\d{2}\\/\\d{2})\\s+(.+?)\\s+(.+?)\\s+(\\d+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,]+)\\s+([\\d\\.,\\-+]+)/gm; // 匹配交易記錄條目，每行以日期開頭\n  \n  while ((match = regex_transactionRecord.exec(text)) !== null) {\n    let amount = parseFloat(match[9].replaceAll(',','')); //replace將所有“,”去除，parseFloat將字串轉換爲小數類型\n    \n    // 根據證券名稱查找PDF内對應的代號並拼接，便於後續Notion頁面查找\n    let regex_assetCode = RegExp(`^[^ \\/]+(?=\\\\s${match[2]})`,\"m\");\n    // let regex_assetCode = /^[^ \\/]+(?=\\s台積電)/m;\n    let match_code = text.match(regex_assetCode);\n    let assetName = `${match_code} ${match[2]}`;\n    \n    results.push({\n      json: {\n        transactionDate: match[1], //交易日\n        assetName, //證券名稱\n        amount, //金額（臺幣）\n        description: `${match[3]} : ${match[4]}(股) * ${match[5]}(單價)`, //交易摘要，顯示 購買 或 賣出 的股數、單價 \n        fee: match[7],\n        tax: match[8],\n      },\n      \"pairedItem\": pairedItemIndex,\n    });\n  }\n}\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1180,20 +1141,20 @@
         "resource": "databasePage",
         "databaseId": {
           "__rl": true,
-          "value": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
+          "value": "={{ $('System Parameter').first().json.NotionDatabaseID }}",
           "mode": "id"
         },
-        "title": "={{ \n`證券月對賬（${$('Parse Info (Stock)').item.json.dateRange.replaceAll('/','')}）`\n}}",
+        "title": "=證券買賣",
         "propertiesUi": {
           "propertyValues": [
             {
               "key": "Accounting Date|date",
               "includeTime": false,
-              "date": "={{ $('Get PDF from Mail1').item.json.headers.date }}"
+              "date": "={{ $('Parse Info (Stock)').item.json.transactionDate }}"
             },
             {
               "key": "Difference NTD|number",
-              "numberValue": "={{ $('Parse Info (Stock)').item.json.Amount.total }}"
+              "numberValue": "={{ $('Parse Info (Stock)').item.json.amount }}"
             },
             {
               "key": "Bank|select",
@@ -1202,7 +1163,7 @@
             {
               "key": "Asset Source|relation",
               "relationValue": [
-                "1607836f-ac92-80ae-a852-d32ba5ecfd39"
+                "={{ $json.id }}"
               ]
             }
           ]
@@ -1212,7 +1173,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1620,
+        1760,
         720
       ],
       "id": "c688b7ca-53e9-4dbc-8024-f759b2f64f8c",
@@ -1238,7 +1199,7 @@
         "blockUi": {
           "blockValues": [
             {
-              "textContent": "={{ $('Compose Notion Text1').item.json.item }}"
+              "textContent": "={{ $('Compose Notion Text1').item.json.textlines }}"
             },
             {
               "richText": true,
@@ -1247,24 +1208,14 @@
                   {
                     "text": "=Mail Source : {{ $('Gmail Input').item.json.Subject }}",
                     "isLink": true,
-                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject+$('Parse Info (Stock)').item.json.dateRange.replaceAll('/',\"%2F\")}}",
+                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject+$json.property_accounting_date.start.slice(0,7)}}",
                     "annotationUi": {}
                   }
                 ]
               }
             },
             {
-              "richText": true,
-              "text": {
-                "text": [
-                  {
-                    "textType": "mention",
-                    "mentionType": "user",
-                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
-                    "annotationUi": {}
-                  }
-                ]
-              }
+              "richText": true
             }
           ]
         }
@@ -1272,7 +1223,7 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1760,
+        1900,
         720
       ],
       "id": "38bbe550-db3e-4add-8dfc-ccd97d332a84",
@@ -1288,31 +1239,6 @@
     },
     {
       "parameters": {
-        "sendTo": "billchen986@gmail.com",
-        "subject": "Automatic accounting Done !",
-        "emailType": "text",
-        "message": "=Source : Gmail - {{ $('Schedual Trigger').item.json.subject }}\nNotion Page :  {{ $('Create Page').item.json.url }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.1,
-      "position": [
-        2300,
-        0
-      ],
-      "id": "9a654493-b572-43ae-9d63-03f120be689e",
-      "name": "Notify Me",
-      "webhookId": "5a546678-28ce-4cb7-8ff8-6239b3209b6f",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "m0kL2ENcZlsNx7qt",
-          "name": "Gmail account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
         "content": "# TODO \n## 模塊化新增Notion頁面與填入資料的流程\n\n1. 需解決輸入數據的格式可能不太一致的問題\n2. 暫未想出合適的可直接填入指定數據格式的方法\n    - Set Fields Node？\n    - Excecute Sub Workflow Node + Triggered by other workflow Node ?\n        因Triggered by other workflow 每個 workflow 僅能使用一個，無法真正達成子函數的功能。為後續擴展性考量，似乎不太適合占據此模塊",
         "height": 300,
         "width": 460
@@ -1320,8 +1246,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1120,
-        1500
+        660,
+        1140
       ],
       "id": "baabf001-ac19-4263-9e16-d507bad0dcd2",
       "name": "Sticky Note4"
@@ -1363,8 +1289,8 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1620,
-        980
+        1760,
+        900
       ],
       "id": "de1ade64-5b53-4104-a677-0016f826d0c8",
       "name": "Create Page5",
@@ -1423,8 +1349,8 @@
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2.2,
       "position": [
-        1760,
-        980
+        1900,
+        900
       ],
       "id": "2ad57942-d04a-43a8-9342-fec54a407762",
       "name": "Add Content4",
@@ -1451,7 +1377,7 @@
       "typeVersion": 1,
       "position": [
         820,
-        980
+        900
       ],
       "id": "3176b068-7769-400e-96dd-c520780c46e9",
       "name": "Extract from PDF2"
@@ -1469,7 +1395,7 @@
       "typeVersion": 2.1,
       "position": [
         660,
-        980
+        900
       ],
       "id": "12721139-4e60-47b8-81d5-f2ab2b1b7a21",
       "name": "Get PDF from Mail2",
@@ -1489,7 +1415,7 @@
       "typeVersion": 2,
       "position": [
         1260,
-        980
+        900
       ],
       "id": "46671b38-fb5c-4f77-8e7c-ec1bcd8923b1",
       "name": "Parse Info (Stock)1",
@@ -1498,60 +1424,8 @@
     },
     {
       "parameters": {
-        "resource": "databasePage",
         "operation": "getAll",
-        "databaseId": {
-          "__rl": true,
-          "value": "1607836f-ac92-80ee-a54a-ce6d751c99c3",
-          "mode": "list",
-          "cachedResultName": "金融資產Source",
-          "cachedResultUrl": "https://www.notion.so/1607836fac9280eea54ace6d751c99c3"
-        },
-        "limit": 1,
-        "filterType": "manual",
-        "filters": {
-          "conditions": [
-            {
-              "key": "Name|title",
-              "condition": "starts_with",
-              "titleValue": "={{ $json.assetName.split(' ')[0] }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.notion",
-      "typeVersion": 2.2,
-      "position": [
-        1400,
-        980
-      ],
-      "id": "fe93049d-4079-45b6-900b-7f2c8be2ff7b",
-      "name": "Search Asset Page1",
-      "credentials": {
-        "notionApi": {
-          "id": "sHrVL1Suf8ubHYrJ",
-          "name": "Bill's Notion"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "content": "# Todo\n\n- 拆分對賬單内各類資產至獨立頁面"
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1120,
-        1240
-      ],
-      "id": "a8d1083b-71c2-4da6-a991-1a4dc367493a",
-      "name": "Sticky Note5"
-    },
-    {
-      "parameters": {
-        "operation": "getAll",
-        "limit": 10,
+        "limit": 5,
         "filters": {
           "labelIds": [
             "Label_1724288855542833094"
@@ -1573,6 +1447,235 @@
           "name": "Gmail account"
         }
       }
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $json.url }}",
+          "mode": "url"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "textType": "mention",
+                    "mentionType": "user",
+                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        2040,
+        720
+      ],
+      "id": "dbbb3dd4-a9a2-4b90-af03-057a55fb0cb8",
+      "name": "Notify Me1",
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ZocmjtBgbLKpUKd5",
+          "mode": "list",
+          "cachedResultName": "Get Notion Database Page"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NotionDatabaseID": "1607836f-ac92-80ee-a54a-ce6d751c99c3",
+            "pageName": "={{ $json.info.Description.split(\" \")[0] }}",
+            "CreateIfNotFound": true
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "pageName",
+              "displayName": "pageName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "NotionDatabaseID",
+              "displayName": "NotionDatabaseID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "CreateIfNotFound",
+              "displayName": "CreateIfNotFound",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1620,
+        520
+      ],
+      "id": "70ac410f-f536-46ae-acbc-fdf61997365d",
+      "name": "Get Asset Page"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ZocmjtBgbLKpUKd5",
+          "mode": "list",
+          "cachedResultName": "Get Notion Database Page"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NotionDatabaseID": "1607836f-ac92-80ee-a54a-ce6d751c99c3",
+            "pageName": "={{ $json.assetName }}",
+            "CreateIfNotFound": true
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "pageName",
+              "displayName": "pageName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "NotionDatabaseID",
+              "displayName": "NotionDatabaseID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "CreateIfNotFound",
+              "displayName": "CreateIfNotFound",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1620,
+        720
+      ],
+      "id": "1b9c901d-e22a-45df-8a86-a0df16532cef",
+      "name": "Get Asset Page1",
+      "notes": "* Search asset page in notion database\n* if cannot find any, create a new one"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ZocmjtBgbLKpUKd5",
+          "mode": "list",
+          "cachedResultName": "Get Notion Database Page"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "pageName": "={{ $json.assetName }}",
+            "NotionDatabaseID": "1607836f-ac92-80ee-a54a-ce6d751c99c3",
+            "CreateIfNotFound": true
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "pageName",
+              "displayName": "pageName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "NotionDatabaseID",
+              "displayName": "NotionDatabaseID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "CreateIfNotFound",
+              "displayName": "CreateIfNotFound",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1620,
+        900
+      ],
+      "id": "4a471ea2-2864-48a2-878d-922884499b6d",
+      "name": "Get Asset Page2"
     }
   ],
   "pinData": {},
@@ -1669,7 +1772,7 @@
       "main": [
         [
           {
-            "node": "Notify Me",
+            "node": "Mark as Done",
             "type": "main",
             "index": 0
           }
@@ -1758,7 +1861,7 @@
       "main": [
         [
           {
-            "node": "Notify Me",
+            "node": "Mark as Done",
             "type": "main",
             "index": 0
           }
@@ -1827,7 +1930,7 @@
       "main": [
         [
           {
-            "node": "Notify Me",
+            "node": "Mark as Done",
             "type": "main",
             "index": 0
           }
@@ -1854,7 +1957,7 @@
       "main": [
         [
           {
-            "node": "Search Asset Page",
+            "node": "Get Asset Page",
             "type": "main",
             "index": 0
           }
@@ -1872,22 +1975,11 @@
         ]
       ]
     },
-    "Search Asset Page": {
-      "main": [
-        [
-          {
-            "node": "Create Page3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Add Content2": {
       "main": [
         [
           {
-            "node": "Notify Me",
+            "node": "Mark as Done",
             "type": "main",
             "index": 0
           }
@@ -1942,7 +2034,7 @@
       "main": [
         [
           {
-            "node": "Create Page4",
+            "node": "Get Asset Page1",
             "type": "main",
             "index": 0
           }
@@ -1953,18 +2045,7 @@
       "main": [
         [
           {
-            "node": "Notify Me",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Notify Me": {
-      "main": [
-        [
-          {
-            "node": "Mark as Done",
+            "node": "Notify Me1",
             "type": "main",
             "index": 0
           }
@@ -2008,18 +2089,7 @@
       "main": [
         [
           {
-            "node": "Search Asset Page1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Search Asset Page1": {
-      "main": [
-        [
-          {
-            "node": "Create Page5",
+            "node": "Get Asset Page2",
             "type": "main",
             "index": 0
           }
@@ -2030,7 +2100,7 @@
       "main": [
         [
           {
-            "node": "Notify Me",
+            "node": "Mark as Done",
             "type": "main",
             "index": 0
           }
@@ -2047,6 +2117,50 @@
           }
         ]
       ]
+    },
+    "Notify Me1": {
+      "main": [
+        [
+          {
+            "node": "Mark as Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Asset Page": {
+      "main": [
+        [
+          {
+            "node": "Create Page3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Asset Page1": {
+      "main": [
+        [
+          {
+            "node": "Create Page4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Asset Page2": {
+      "main": [
+        [
+          {
+            "node": "Create Page5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -2056,7 +2170,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "saveManualExecutions": false
   },
-  "versionId": "4045a62d-f11a-4763-94f6-5395f731cbfb",
+  "versionId": "a3fb302a-78a0-4a11-bf80-c851f13cb9c8",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "4dd7c30ae3db2652dcaa956b6b4e864865a73535788bea24682077d280be0003"

@@ -1,0 +1,264 @@
+{
+  "name": "Get Notion Database Page",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -340,
+        -80
+      ],
+      "id": "dd1571d4-c0b2-4192-ab62-c8b56d96a6a0",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "content": "## Get Database Page\n* loop over input items\n* if cannot find page via name, use name to create a new page",
+        "height": 440,
+        "width": 1020,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        -240
+      ],
+      "id": "1b80b8dc-a9c3-472c-ba8b-0e2fa576eb89",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -220
+      ],
+      "id": "9c2d8f4d-88e5-45df-8ec7-6b84b8e06e6b",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "={{ $json.NotionDatabaseID }}",
+          "mode": "id"
+        },
+        "limit": 1,
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Name|title",
+              "condition": "starts_with",
+              "titleValue": "={{ $json.pageName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -100,
+        -20
+      ],
+      "id": "017d5ac9-1658-4252-9a44-be9d52118b4d",
+      "name": "Search Database Page",
+      "alwaysOutputData": true,
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "={{ $('Loop Over Items').item.json.NotionDatabaseID }}",
+          "mode": "id"
+        },
+        "title": "={{ $('Loop Over Items').item.json.pageName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        -20
+      ],
+      "id": "249b8e93-f91a-430c-a779-e8783873b842",
+      "name": "Create New Page",
+      "credentials": {
+        "notionApi": {
+          "id": "sHrVL1Suf8ubHYrJ",
+          "name": "Bill's Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "pageName"
+            },
+            {
+              "name": "NotionDatabaseID"
+            },
+            {
+              "name": "CreateIfNotFound",
+              "type": "boolean"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -520,
+        -80
+      ],
+      "id": "c23f3171-5033-46ee-957f-343b20b8421c",
+      "name": "Executed by other workflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d0dee857-f12b-4e3e-8e1d-d2857976bd53",
+              "leftValue": "={{ $json.hasField('id') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "5c732bbd-9b0e-454e-9bd6-e7dd554c48d2",
+              "leftValue": "={{ $('Loop Over Items').item.json.CreateIfNotFound }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        40,
+        -20
+      ],
+      "id": "267f9b11-6411-4af5-a6d8-12a3bb34611d",
+      "name": "If not exist"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search Database Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Database Page": {
+      "main": [
+        [
+          {
+            "node": "If not exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create New Page": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Executed by other workflow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If not exist": {
+      "main": [
+        [
+          {
+            "node": "Create New Page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "52504643-cb53-450d-a0aa-b6052cf70f23",
+  "meta": {
+    "instanceId": "4dd7c30ae3db2652dcaa956b6b4e864865a73535788bea24682077d280be0003"
+  },
+  "id": "ZocmjtBgbLKpUKd5",
+  "tags": []
+}
