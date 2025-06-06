@@ -245,7 +245,7 @@
     },
     {
       "parameters": {
-        "content": "## TODO\n* 將發件者與處理流程的鍵值對儲存為 System Parameter\n* 統一管理參數，供後續管理與擴展",
+        "content": "## TODO\n* 統一管理參數，供後續管理與擴展",
         "height": 140,
         "color": 7
       },
@@ -395,32 +395,6 @@
         }
       },
       "notes": "TODO\n0. 設置Database Property至對應的項目中\n1. 將Code中爬取的資料列爲表格添加進Page中\n2. 將PDF附件上傳之Page中便於反查"
-    },
-    {
-      "parameters": {
-        "operation": "removeLabels",
-        "messageId": "={{ $json.id }}",
-        "labelIds": [
-          "INBOX",
-          "UNREAD",
-          "Label_1724288855542833094"
-        ]
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.1,
-      "position": [
-        2720,
-        0
-      ],
-      "id": "724919a7-e796-4b57-8c5b-503aaa2a28a6",
-      "name": "Remove Inbox and Unread",
-      "webhookId": "e720b3c9-3d25-487e-9b4b-947dcf2df78d",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "m0kL2ENcZlsNx7qt",
-          "name": "Gmail account"
-        }
-      }
     },
     {
       "parameters": {
@@ -1047,8 +1021,7 @@
           "id": "sHrVL1Suf8ubHYrJ",
           "name": "Bill's Notion"
         }
-      },
-      "disabled": true
+      }
     },
     {
       "parameters": {},
@@ -1487,8 +1460,7 @@
           "id": "sHrVL1Suf8ubHYrJ",
           "name": "Bill's Notion"
         }
-      },
-      "disabled": true
+      }
     },
     {
       "parameters": {
@@ -1676,6 +1648,31 @@
       ],
       "id": "4a471ea2-2864-48a2-878d-922884499b6d",
       "name": "Get Asset Page2"
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "UNREAD",
+          "Label_1724288855542833094"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2720,
+        0
+      ],
+      "id": "724919a7-e796-4b57-8c5b-503aaa2a28a6",
+      "name": "Remove Unread",
+      "webhookId": "e720b3c9-3d25-487e-9b4b-947dcf2df78d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "m0kL2ENcZlsNx7qt",
+          "name": "Gmail account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -1789,17 +1786,6 @@
           }
         ],
         []
-      ]
-    },
-    "Remove Inbox and Unread": {
-      "main": [
-        [
-          {
-            "node": "Execution Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
       ]
     },
     "Get PDF from Mail": {
@@ -1946,7 +1932,7 @@
       "main": [
         [
           {
-            "node": "Remove Inbox and Unread",
+            "node": "Remove Unread",
             "type": "main",
             "index": 0
           }
@@ -2161,6 +2147,17 @@
           }
         ]
       ]
+    },
+    "Remove Unread": {
+      "main": [
+        [
+          {
+            "node": "Execution Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -2170,7 +2167,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "saveManualExecutions": false
   },
-  "versionId": "a3fb302a-78a0-4a11-bf80-c851f13cb9c8",
+  "versionId": "f8f2d781-1834-4e01-b669-2333e00b1e59",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "4dd7c30ae3db2652dcaa956b6b4e864865a73535788bea24682077d280be0003"
