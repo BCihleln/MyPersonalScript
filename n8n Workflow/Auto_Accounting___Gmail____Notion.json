@@ -287,119 +287,6 @@
     },
     {
       "parameters": {
-        "resource": "block",
-        "blockId": {
-          "__rl": true,
-          "value": "={{ $('Create Page').item.json.id }}",
-          "mode": "id"
-        },
-        "blockUi": {
-          "blockValues": [
-            {
-              "richText": true,
-              "text": {
-                "text": [
-                  {
-                    "textType": "mention",
-                    "mentionType": "user",
-                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
-                    "annotationUi": {}
-                  }
-                ]
-              }
-            },
-            {
-              "textContent": "={{ $('Compose Notion Text').item.json.item }}"
-            },
-            {
-              "richText": true,
-              "text": {
-                "text": [
-                  {
-                    "text": "=Mail Source : {{ $('Gmail Input').item.json.Subject }}",
-                    "isLink": true,
-                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject}}",
-                    "annotationUi": {}
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.notion",
-      "typeVersion": 2.2,
-      "position": [
-        1900,
-        -360
-      ],
-      "id": "03290b5e-ce3f-4c9c-8edd-7fb8b3b82e77",
-      "name": "Log Detail",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "credentials": {
-        "notionApi": {
-          "id": "sHrVL1Suf8ubHYrJ",
-          "name": "Bill's Notion"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "resource": "databasePage",
-        "databaseId": {
-          "__rl": true,
-          "value": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
-          "mode": "id"
-        },
-        "title": "={{ $('System Parameter').item.json.TransactionPageName[0]+\"（\"+$('Parse Info').item.json.dateRange+\"）\"}}",
-        "propertiesUi": {
-          "propertyValues": [
-            {
-              "key": "Accounting Date|date",
-              "includeTime": false,
-              "date": "={{ $('Get PDF from Mail').item.json.headers.date }}"
-            },
-            {
-              "key": "Difference NTD|number",
-              "numberValue": "={{ -$('Parse Info').item.json.totalConsume }}"
-            },
-            {
-              "key": "Bank|select",
-              "selectValue": "中國信託"
-            },
-            {
-              "key": "Asset Source|relation",
-              "relationValue": [
-                "={{ $('System Parameter').item.json.AccountingType.DailyConsume_ID }}"
-              ]
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.notion",
-      "typeVersion": 2.2,
-      "position": [
-        1760,
-        -360
-      ],
-      "id": "0ffddb8a-521a-47d4-a88b-e16d17241a8f",
-      "name": "Create Page",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "credentials": {
-        "notionApi": {
-          "id": "sHrVL1Suf8ubHYrJ",
-          "name": "Bill's Notion"
-        }
-      },
-      "disabled": true,
-      "notes": "TODO\n0. 設置Database Property至對應的項目中\n1. 將Code中爬取的資料列爲表格添加進Page中\n2. 將PDF附件上傳之Page中便於反查"
-    },
-    {
-      "parameters": {
         "resource": "databasePage",
         "operation": "getAll",
         "databaseId": {
@@ -502,8 +389,7 @@
           "id": "m0kL2ENcZlsNx7qt",
           "name": "Gmail account"
         }
-      },
-      "disabled": true
+      }
     },
     {
       "parameters": {},
@@ -654,7 +540,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2740,
+        2960,
         20
       ],
       "id": "15967498-b837-4910-8c1a-f63748728c38",
@@ -770,119 +656,6 @@
       ],
       "id": "baabf001-ac19-4263-9e16-d507bad0dcd2",
       "name": "Sticky Note4"
-    },
-    {
-      "parameters": {
-        "resource": "databasePage",
-        "databaseId": {
-          "__rl": true,
-          "value": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
-          "mode": "id"
-        },
-        "title": "=基金配息",
-        "propertiesUi": {
-          "propertyValues": [
-            {
-              "key": "Accounting Date|date",
-              "includeTime": false,
-              "date": "={{ $('Get PDF from Mail2').item.json.headers.date }}"
-            },
-            {
-              "key": "Difference NTD|number",
-              "numberValue": "={{ $('Parse Info (Stock)1').item.json.amount }}"
-            },
-            {
-              "key": "Bank|select",
-              "selectValue": "國泰世華"
-            },
-            {
-              "key": "Asset Source|relation",
-              "relationValue": [
-                "={{ $json.id }}"
-              ]
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.notion",
-      "typeVersion": 2.2,
-      "position": [
-        2120,
-        900
-      ],
-      "id": "de1ade64-5b53-4104-a677-0016f826d0c8",
-      "name": "Create Page5",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "credentials": {
-        "notionApi": {
-          "id": "sHrVL1Suf8ubHYrJ",
-          "name": "Bill's Notion"
-        }
-      },
-      "disabled": true,
-      "notes": "TODO\n0. 設置Database Property至對應的項目中\n1. 將Code中爬取的資料列爲表格添加進Page中\n2. 將PDF附件上傳之Page中便於反查"
-    },
-    {
-      "parameters": {
-        "resource": "block",
-        "blockId": {
-          "__rl": true,
-          "value": "={{ $json.id }}",
-          "mode": "id"
-        },
-        "blockUi": {
-          "blockValues": [
-            {
-              "textContent": "={{ $('Parse Info (Stock)1').item.json.description }}"
-            },
-            {
-              "richText": true,
-              "text": {
-                "text": [
-                  {
-                    "text": "=Mail Source : {{ $('Gmail Input').item.json.Subject }}",
-                    "isLink": true,
-                    "textLink": "=https://mail.google.com/mail/u/0/#search/{{$('Gmail Input').item.json.Subject}}",
-                    "annotationUi": {}
-                  }
-                ]
-              }
-            },
-            {
-              "richText": true,
-              "text": {
-                "text": [
-                  {
-                    "textType": "mention",
-                    "mentionType": "user",
-                    "user": "34d4a4ac-4aed-4d26-905b-fbd59073d105",
-                    "annotationUi": {}
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.notion",
-      "typeVersion": 2.2,
-      "position": [
-        2260,
-        900
-      ],
-      "id": "2ad57942-d04a-43a8-9342-fec54a407762",
-      "name": "Add Content4",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "credentials": {
-        "notionApi": {
-          "id": "sHrVL1Suf8ubHYrJ",
-          "name": "Bill's Notion"
-        }
-      },
-      "disabled": true
     },
     {
       "parameters": {
@@ -1168,7 +941,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2940,
+        3160,
         20
       ],
       "id": "724919a7-e796-4b57-8c5b-503aaa2a28a6",
@@ -1717,143 +1490,6 @@
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "FYGsrFtyuSFMnWSR",
-          "mode": "list",
-          "cachedResultName": "Auto Accounting : Gmail -> Notion"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "NotifyMyself": true,
-            "TotalAmount": "={{ $json.amount }}",
-            "DatabaseID": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
-            "PageTitle": "={{ $json.Description }}",
-            "AccountingDate": "={{ $json.transactionDate }}",
-            "Currency": "NTD",
-            "BankName": "中國信託",
-            "AssetPageID": "={{ $('System Parameter').item.json.AccountingType.DailyConsume_ID }}",
-            "MailSource_Subject": "={{ $('Gmail Input').item.json.Subject }}",
-            "MailSource_SearchKeyword": "={{$('Gmail Input').item.json.Subject + ' ' + $json.transactionDate.replaceAll('/',\"%2F\")}}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "NotifyMyself",
-              "displayName": "NotifyMyself",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "boolean"
-            },
-            {
-              "id": "DatabaseID",
-              "displayName": "DatabaseID",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "PageTitle",
-              "displayName": "PageTitle",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "AccountingDate",
-              "displayName": "AccountingDate",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "Currency",
-              "displayName": "Currency",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "TotalAmount",
-              "displayName": "TotalAmount",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "number"
-            },
-            {
-              "id": "BankName",
-              "displayName": "BankName",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "AssetPageID",
-              "displayName": "AssetPageID",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "ParagraphText",
-              "displayName": "ParagraphText",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "MailSource_Subject",
-              "displayName": "MailSource_Subject",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            },
-            {
-              "id": "MailSource_SearchKeyword",
-              "displayName": "MailSource_SearchKeyword",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string"
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.2,
-      "position": [
-        1760,
-        0
-      ],
-      "id": "a24b1157-243f-4e07-99ac-59ca404eaf3f",
-      "name": "Record Accounting Notion Page2"
-    },
-    {
-      "parameters": {
         "mode": "chooseBranch",
         "numberInputs": 3,
         "useDataOfInput": 3
@@ -2305,6 +1941,281 @@
       ],
       "id": "de015717-0f80-4964-9af5-401053e7cb95",
       "name": "Record Accounting Notion Page5"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FYGsrFtyuSFMnWSR",
+          "mode": "list",
+          "cachedResultName": "Auto Accounting : Gmail -> Notion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NotifyMyself": true,
+            "TotalAmount": "={{ $json.amount }}",
+            "DatabaseID": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
+            "PageTitle": "={{ $json.Description }}",
+            "AccountingDate": "={{ $json.transactionDate }}",
+            "Currency": "NTD",
+            "BankName": "中國信託",
+            "AssetPageID": "={{ $('System Parameter').item.json.AccountingType.DailyConsume_ID }}",
+            "MailSource_Subject": "={{ $('Gmail Input').item.json.Subject }}",
+            "MailSource_SearchKeyword": "={{$('Gmail Input').item.json.Subject + ' ' + $json.transactionDate.replaceAll('/',\"%2F\")}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NotifyMyself",
+              "displayName": "NotifyMyself",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean"
+            },
+            {
+              "id": "DatabaseID",
+              "displayName": "DatabaseID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "PageTitle",
+              "displayName": "PageTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "AccountingDate",
+              "displayName": "AccountingDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "TotalAmount",
+              "displayName": "TotalAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "BankName",
+              "displayName": "BankName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "AssetPageID",
+              "displayName": "AssetPageID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ParagraphText",
+              "displayName": "ParagraphText",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MailSource_Subject",
+              "displayName": "MailSource_Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "MailSource_SearchKeyword",
+              "displayName": "MailSource_SearchKeyword",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        0
+      ],
+      "id": "a24b1157-243f-4e07-99ac-59ca404eaf3f",
+      "name": "Record Accounting Notion Page2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FYGsrFtyuSFMnWSR",
+          "mode": "list",
+          "cachedResultName": "Auto Accounting : Gmail -> Notion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NotifyMyself": true,
+            "TotalAmount": "={{ -$('Parse Info').item.json.totalConsume }}",
+            "DatabaseID": "={{ $('System Parameter').item.json.NotionDatabaseID }}",
+            "PageTitle": "={{ \"對賬單（\"+$('Parse Info').item.json.dateRange+\"）\"}}",
+            "AccountingDate": "={{ $('Get PDF from Mail').item.json.headers.date }}",
+            "Currency": "NTD",
+            "BankName": "中國信託",
+            "AssetPageID": "={{ $('System Parameter').item.json.AccountingType.DailyConsume_ID }}",
+            "ParagraphText": "={{ $('Compose Notion Text').item.json.item }}",
+            "MailSource_Subject": "={{ $('Gmail Input').item.json.Subject }}",
+            "MailSource_SearchKeyword": "={{ $('Gmail Input').item.json.Subject }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NotifyMyself",
+              "displayName": "NotifyMyself",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean"
+            },
+            {
+              "id": "DatabaseID",
+              "displayName": "DatabaseID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "PageTitle",
+              "displayName": "PageTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "AccountingDate",
+              "displayName": "AccountingDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "TotalAmount",
+              "displayName": "TotalAmount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "BankName",
+              "displayName": "BankName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "AssetPageID",
+              "displayName": "AssetPageID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "ParagraphText",
+              "displayName": "ParagraphText",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MailSource_Subject",
+              "displayName": "MailSource_Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "MailSource_SearchKeyword",
+              "displayName": "MailSource_SearchKeyword",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        -360
+      ],
+      "id": "f5ef43b1-1dd8-4b24-ad69-20c2f17466b9",
+      "name": "Record Accounting Notion Page6"
     }
   ],
   "pinData": {},
@@ -2374,7 +2285,7 @@
       "main": [
         [
           {
-            "node": "Create Page",
+            "node": "Record Accounting Notion Page6",
             "type": "main",
             "index": 0
           }
@@ -2394,29 +2305,6 @@
     },
     "Manual Approve": {
       "main": [
-        []
-      ]
-    },
-    "Log Detail": {
-      "main": [
-        [
-          {
-            "node": "Mark as Done",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Create Page": {
-      "main": [
-        [
-          {
-            "node": "Log Detail",
-            "type": "main",
-            "index": 0
-          }
-        ],
         []
       ]
     },
@@ -2588,17 +2476,6 @@
         ]
       ]
     },
-    "Create Page5": {
-      "main": [
-        [
-          {
-            "node": "Add Content4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Get PDF from Mail2": {
       "main": [
         [
@@ -2626,17 +2503,6 @@
         [
           {
             "node": "Get Asset Page2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Add Content4": {
-      "main": [
-        [
-          {
-            "node": "Mark as Done",
             "type": "main",
             "index": 0
           }
@@ -2792,17 +2658,6 @@
         ]
       ]
     },
-    "Record Accounting Notion Page2": {
-      "main": [
-        [
-          {
-            "node": "Mark as Done",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Return Notion Page": {
       "main": [
         [
@@ -2845,7 +2700,29 @@
       "main": [
         [
           {
-            "node": "Create Page5",
+            "node": "Mark as Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Accounting Notion Page2": {
+      "main": [
+        [
+          {
+            "node": "Mark as Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Accounting Notion Page6": {
+      "main": [
+        [
+          {
+            "node": "Mark as Done",
             "type": "main",
             "index": 0
           }
@@ -2860,7 +2737,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "saveManualExecutions": false
   },
-  "versionId": "dc0a3bf5-4819-4538-8003-37fc291827ec",
+  "versionId": "cce64ca0-1d20-4e50-a614-4f70e15b2f8f",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "4dd7c30ae3db2652dcaa956b6b4e864865a73535788bea24682077d280be0003"
