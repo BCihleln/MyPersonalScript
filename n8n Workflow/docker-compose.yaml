@@ -13,5 +13,4 @@ services:
     container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --cleanup --interval 604800 # Check for updates every week
-    restart: always
+    command: --cleanup --run-once # Check for updates only on startup
