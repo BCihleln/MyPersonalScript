@@ -7,8 +7,8 @@ services:
     ports:
       - ${N8N_ACCESS_PORT:-5678}:${N8N_CONTAINER_PORT:-5678}
     environment:
-    - N8N_HOST=${N8N_HOST:-localhost}
-    - N8N_PORT=${N8N_CONTAINER_PORT:-5678}
+    - N8N_HOST: ${N8N_HOST:-localhost}
+    - N8N_PORT: ${N8N_CONTAINER_PORT:-5678}
     volumes:
       - ${N8N_LOCAL_VOLUME_PATH:-./}:/home/node/.n8n
     restart: always
