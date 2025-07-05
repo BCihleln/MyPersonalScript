@@ -1,11 +1,16 @@
+# Use this file by running `docker-compose --env-file .env up` in the same directory.
+
 services:
   n8n:
-    image: n8nio/n8n:stable
+    image: n8nio/n8n:${N8N_IMAGE_TAG:-stable}
     container_name: n8n
     ports:
-      - 5678:5678
+      - ${N8N_ACCESS_PORT:-5678}:${N8N_CONTAINER_PORT:-5678}
+    environment:
+    - N8N_HOST=${N8N_HOST:-localhost}
+    - N8N_PORT=${N8N_CONTAINER_PORT:-5678}
     volumes:
-      - ../n8n_docker:/home/node/.n8n
+      - ${N8N_LOCAL_VOLUME_PATH:-./}:/home/node/.n8n
     restart: always
 
   watchtower:
